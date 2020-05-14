@@ -1,8 +1,8 @@
 from docx import Document
-from nltk import word_tokenize
+from nltk import word_tokenize, sent_tokenize
 import pandas as pd
     
-def getText(filename):
+def getQuery(filename):
     doc = Document(filename)
     fullText = []
     for p in doc.paragraphs:
@@ -11,5 +11,5 @@ def getText(filename):
     return fullText
 
 df = pd.DataFrame()    
-df['WORDS'] = getText(r'docxFiles\sample.docx')
+df['WORDS'] = getQuery(r'docxFiles\sample.docx')
 df.to_csv(r'csvFiles\query.csv')

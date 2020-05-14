@@ -18,8 +18,7 @@ class SearchEngine():
         data = requests.get(url).json()
 
         results_item = data.get("items")
-        
-        similarity = 0;
+
         titles = []
         snippets = []
         html_snippets = []
