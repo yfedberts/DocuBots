@@ -6,6 +6,7 @@ from nltk.corpus import wordnet as wn
 
 def getText(filename):
     doc = Document(filename)
+    fullText = []
     for p in doc.paragraphs:
         if p.text != '':
             fullText.append(p.text)
