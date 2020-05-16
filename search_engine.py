@@ -10,56 +10,59 @@ class SearchEngine():
 
     def getQuery(self, filename):
         doc = Document(filename)
-        fullText = ''
+        fullText = []
         for p in doc.paragraphs:
             if p != '':
-                Text = (p.text)
-                fullText += (Text + " ")
-        
+                fullText.append(p.text)
+        fullText = [ft for ft in fullText if ft]
         return fullText
 
-    def searchWeb(self, queryInput):
+    def searchWeb(self, qInput):
         load_dotenv(find_dotenv())
 
         API_KEY = os.getenv("API_KEY")
         SEARCH_ENGINE_ID = os.getenv("SEARCH_ENGINE_ID")
         
-        query = queryInput
-        url = f"https://www.googleapis.com/customsearch/v1?key={API_KEY}&cx={SEARCH_ENGINE_ID}&q={query}"
-        data = requests.get(url).json()
+        queryInput = qInput
 
-        results_item = data.get("items")
+        result_links = []
+        result_scores = 0.0
 
-        titles = []
-        snippets = []
-        html_snippets = []
-        links = []
+        for q in queryInput:
+            query = q
+            
+            url = f"https://www.googleapis.com/customsearch/v1?key={API_KEY}&cx={SEARCH_ENGINE_ID}&q={query}"
+            data = requests.get(url).json()
 
-        for i, results_item in enumerate(results_item, start=1):
-            try:
-                title = results_item.get("title")
-                snippet = results_item.get("snippet")
-                html_snippet = results_item.get("htmlSnippet")
-                link = results_item.get("link")
+            results_item = data.get("items")
 
-                if(title != '' and snippet != '' and html_snippet != '' and link != ''):
-                    titles.append(title)
-                    snippets.append(snippet)
-                    html_snippets.append(html_snippet)
-                    links.append(link)
-            except:
-                continue
+            snippets = []
+            links = []
 
-        best_score = 0.0
-        best_link = ''
+            for rs in results_item:
+                try:
+                    snippet = rs.get("snippet")
+                    link = rs.get("link")
 
-        for i, j in zip(snippets,links):
-            simi = analyzer.query_similarity(i, query)
-            if(simi > best_score):
-                best_score = simi
-                best_link = j
 
-        return best_link, best_score
+                    if(snippet != '' and link != ''):
+                        snippets.append(snippet)
+                        links.append(link)
+                except:
+                    continue
+
+            best_score = 0.0
+            best_link = ''
+
+            for i, j in zip(snippets,links):
+                simi = analyzer.query_similarity(i, query)
+                if(simi > best_score):
+                    best_score = simi
+                    best_link = j
+
+            result_links.append(best_link)
+            result_scores += best_score
+        return(result_scores/len(result_links)), result_links
 
     def get_simi_link(self, d):
             
@@ -67,7 +70,7 @@ class SearchEngine():
         doc = se.getQuery(d)
         link_result, score = se.searchWeb(doc)
         try:
-            if(link_result != ''):
+            if(link_result != '' and score != 0.0):
                 return link_result, score
         except:
             return "No similar content found online"
