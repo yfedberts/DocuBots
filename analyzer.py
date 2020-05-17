@@ -39,9 +39,12 @@ def similarity_ratio(s1,s2):
     testList = []
 
     for s in s1:
-        testList.append(max([i.path_similarity(s) for i in s2 if i.path_similarity(s) is not None]))
-        if(i.path_similarity(s) for i in s2 if i.path_similarity(s) is None):
+        simlist = [s.path_similarity(ss) for ss in s2 if s.path_similarity(ss) is not None]
+        if not simlist:
             continue
+
+        max_score = max(simlist)
+        testList.append(max_score)
 
     output = sum(testList)/len(testList)
     return output
