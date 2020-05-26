@@ -3,7 +3,8 @@ import os
 from dotenv import load_dotenv, find_dotenv
 from nltk import word_tokenize, sent_tokenize
 from docx import Document
-from Model import doc_reader
+import doc_reader
+import pandas as pd
 
 class SearchEngine():        
 
@@ -90,12 +91,16 @@ class SearchEngine():
         dr = doc_reader.DocReader()
         se = SearchEngine()
         doc = dr.getQuery(d)
-        link_result, score = se.searchWeb(doc)
+        score, links_result = se.searchWeb(doc)
+        df = pd.DataFrame()
+        print(links_result)
+        df['urls'] = links_result
+        df.to_csv("csvFiles/linksToScrape.csv")
         try:
-            if(link_result != '' and score != 0.0):
-                return link_result, score
+            if(links_result != '' and score != 0.0):
+                return links_result, score
         except:
             return "No similar content found online"
 
 a = SearchEngine()
-print(a.get_simi_link('docxFiles\sample.docx'))
+a.get_simi_link("docxFiles\sample.docx")
