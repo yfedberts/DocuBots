@@ -14,9 +14,8 @@ BOT_NAME = 'doc_spider'
 SPIDER_MODULES = ['doc_spider.spiders']
 NEWSPIDER_MODULE = 'doc_spider.spiders'
 
-
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:77.0) Gecko/20100101 Firefox/77.0'
+#USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:77.0) Gecko/20100101 Firefox/77.0'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
@@ -55,6 +54,11 @@ CONCURRENT_REQUESTS = 32
 #DOWNLOADER_MIDDLEWARES = {
 #    'doc_spider.middlewares.DocSpiderDownloaderMiddleware': 543,
 #}
+
+DOWNLOADER_MIDDLEWARES = {
+    'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+    'scrapy_user_agents.middlewares.RandomUserAgentMiddleware': 400,
+}
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
