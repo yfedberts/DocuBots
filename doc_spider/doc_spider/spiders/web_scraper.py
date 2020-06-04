@@ -1,23 +1,18 @@
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from scrapy.crawler import CrawlerProcess
-import pandas as pd
-from items import DocSpiderItem
+import scrapy
 
-class DocSpider(CrawlSpider):
+class DocSpider(scrapy.Spider):
     name = 'doc_spider'
-    start_urls = ['http://quotes.toscrape.com']
+    start_urls = ['https://www.placepass.com/blog/ultimate-travel-bucket-list']
 
-    rules = (
-        Rule(LinkExtractor(), callback='parse_item', follow=False),
-    )
-    
-    def parse_item(self, response):
-        for quote in response.xpath('//div[@class]//div[@class]//div[@class]'):
-            if quote:
-                test = quote.xpath('//div[@class]//span/text()').extract_first()
+    def parse(self, response):
+        for desc in response.xpath('/html//div[@class]//div[@class]//p'):
+            if desc:
+                test = desc.xpath('//p/text()').extract()
         
-        yield{
+        yield{  
             'test': test
         }
 
