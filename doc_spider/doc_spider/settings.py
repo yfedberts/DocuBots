@@ -68,9 +68,12 @@ DOWNLOADER_MIDDLEWARES = {
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'doc_spider.pipelines.DocSpiderPipeline': 300,
-#}
+ITEM_PIPELINES = {
+    'doc_spider.pipelines.DocSpiderPipeline': 300,
+}
+
+FEED_URI = 'test.json'
+FEED_FORMAT = 'json'
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html

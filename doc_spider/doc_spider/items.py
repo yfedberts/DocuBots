@@ -10,8 +10,6 @@ import scrapy
 
 class DocSpiderItem(scrapy.Item):
     # define the fields for your item here like:
-    url = scrapy.Field()
-    title = scrapy.Field()
-    body = scrapy.Field()
-    source = scrapy.Field()
+    links = scrapy.Field()
+    texts = scrapy.Field()
 

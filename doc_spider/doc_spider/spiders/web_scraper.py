@@ -2,18 +2,24 @@ from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from scrapy.crawler import CrawlerProcess
 import scrapy
+import pandas as pd
+from items import DocSpiderItem
 
 class DocSpider(scrapy.Spider):
     name = 'doc_spider'
-    start_urls = ['https://www.newyorker.com/magazine/2020/01/13/the-future-of-americas-contest-with-china']
+
+    urlsList = pd.read_csv('B:\docubot\DocuBots\csvFiles\linksToScrape.csv')
+    urls = []
+    for url in urlsList['urls']:
+        urls.append(url)
+
+    start_urls = urls
 
     def parse(self, response):
-        for desc in response.xpath('/html//div[@class]//div[@class]//p'):
-            if desc:
-                test = desc.xpath('//p/text()').extract()
-        
-        yield{  
-            'test': test
-        }
-
-
+        data = {}
+        for content in response.xpath('/html//div[@class]//div[@class]//p'):
+            if content:
+                data['links'] = response.request.url
+                data['texts'] = " ".join(content.xpath('//p/text()').extract())
+            
+        yield data
