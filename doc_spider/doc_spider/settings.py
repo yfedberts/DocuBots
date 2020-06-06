@@ -72,7 +72,7 @@ ITEM_PIPELINES = {
     'doc_spider.pipelines.DocSpiderPipeline': 300,
 }
 
-FEED_URI = 'test.json'
+FEED_URI = 'scraped_results.json'
 FEED_FORMAT = 'json'
 
 # Enable and configure the AutoThrottle extension (disabled by default)

@@ -6,10 +6,13 @@
 # https://docs.scrapy.org/en/latest/topics/items.html
 
 import scrapy
+from scrapy.loader.processors import Compose, MapCompose, Join, TakeFirst
+
+#clean_text = Compose(MapCompose(lambda v: v.strip("\n").strip("\t").strip("\u201c").strip("\u2019").strip("")), Join())
+#to_int = Compose(TakeFirst(), int)
 
 
 class DocSpiderItem(scrapy.Item):
     # define the fields for your item here like:
     links = scrapy.Field()
     texts = scrapy.Field()
-
