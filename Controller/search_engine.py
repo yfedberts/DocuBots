@@ -6,7 +6,7 @@ from docx import Document
 import doc_reader
 import pandas as pd
 
-class SearchEngine():        
+class SearchEngine():
 
     """
     def doc_to_paraset(self, filename):
@@ -24,7 +24,7 @@ class SearchEngine():
         Function to search the web using paragraphs from the docx files as a query, returning at most 10 results for each paragraphs,
         It then compares each results with query and returns only the most similar result
         """
-        
+
         #Read the .env files to get API Key and Search engine ID
         load_dotenv(find_dotenv())
         API_KEY = os.getenv("API_KEY4")
@@ -32,7 +32,7 @@ class SearchEngine():
 
         #Create an object of the doc_reader class to compare similarities
         dr = doc_reader.DocReader()
-        
+
         #Initiale lists that stores paragraphs for queries, most similar links, and total score respectively
         queryInput = qInput
         result_links = []
@@ -62,7 +62,7 @@ class SearchEngine():
                     links.append(link)
                 except:
                     continue
-            
+
             #Temp variable to store highest similarity and most similar link
             best_score = 0.0
             best_link = ''
@@ -77,7 +77,7 @@ class SearchEngine():
 
             result_links.append(best_link)
             result_scores += best_score
-        
+
         #Returns the total score and most similar links to each paragraphs
         return((result_scores/len(result_links)) * 100), result_links
 

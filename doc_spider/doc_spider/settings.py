@@ -21,7 +21,10 @@ NEWSPIDER_MODULE = 'doc_spider.spiders'
 ROBOTSTXT_OBEY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS = 100
+
+REACTOR_THREADPOOL_MAXSIZE = 20
+
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -32,8 +35,11 @@ CONCURRENT_REQUESTS = 32
 #CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
-#COOKIES_ENABLED = False
+COOKIES_ENABLED = False
 
+DOWNLOAD_TIMEOUT = 15
+REDIRECT_ENABLED = False
+AJAXCRAWL_ENABLED = True
 # Disable Telnet Console (enabled by default)
 #TELNETCONSOLE_ENABLED = False
 
@@ -72,8 +78,8 @@ ITEM_PIPELINES = {
     'doc_spider.pipelines.DocSpiderPipeline': 300,
 }
 
-FEED_URI = 'scraped_results.json'
-FEED_FORMAT = 'json'
+#FEED_URI = '..\Model\Data\scraped_results.json'
+#FEED_FORMAT = 'json'
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
