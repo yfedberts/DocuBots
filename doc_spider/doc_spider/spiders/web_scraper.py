@@ -1,8 +1,7 @@
 from scrapy.utils.project import get_project_settings
 from scrapy.crawler import CrawlerProcess
 from twisted.internet import reactor
-import scrapy
-import pandas as pd
+import scrapy, os, pandas
 from items import DocSpiderItem
 
 class DocSpider(scrapy.Spider):
@@ -16,7 +15,7 @@ class DocSpider(scrapy.Spider):
     name = 'doc_spider'
 
     #File of the URL list here
-    urlsList = pd.read_csv('B:\docubot\DocuBots\Model\Data\linksToScrape.csv')
+    urlsList = pandas.read_csv('B:\docubot\DocuBots\Model\Data\linksToScrape.csv')
     urls = []
     #Take the urls and insert them into a url list
     for url in urlsList['urls']:
@@ -39,10 +38,19 @@ class DocSpider(scrapy.Spider):
         yield data
 
     def run_crawler(self):
-        if __name__ ==  "__main__":
-            settings = get_project_settings()
-            settings.set('FEED_FORMAT', 'json')
-            settings.set('FEED_URI', 'scrape_results.json')
-            c = CrawlerProcess(settings)
-            c.crawl(DocSpider)
-            c.start(stop_after_crawl=True)
+        try:
+            os.path.exists("scrape_results.json")
+            os.remove("scrape_results.json")
+            ds = DocSpider()
+            ds.run_crawler()
+        except:
+            if __name__ ==  "__main__":
+                settings = get_project_settings()
+                settings.set('FEED_FORMAT', 'json')
+                settings.set('FEED_URI', 'scrape_results.json')
+                c = CrawlerProcess(settings)
+                c.crawl(DocSpider)
+                c.start(stop_after_crawl=True)
+
+ds = DocSpider()
+ds.run_crawler()
