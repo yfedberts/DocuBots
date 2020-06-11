@@ -27,8 +27,8 @@ class SearchEngine():
 
         #Read the .env files to get API Key and Search engine ID
         load_dotenv(find_dotenv())
-        API_KEY = os.getenv("API_KEY4")
-        SEARCH_ENGINE_ID = os.getenv("SEARCH_ENGINE_ID4")
+        API_KEY = os.getenv("API_KEY")
+        SEARCH_ENGINE_ID = os.getenv("SEARCH_ENGINE_ID")
 
         #Create an object of the doc_reader class to compare similarities
         dr = doc_reader.DocReader()
@@ -70,12 +70,14 @@ class SearchEngine():
             #Iterate through the descriptions and compare with query
             #Replace current best if score is higher than the current best
             for i in range(len(snippets)):
-                simi = dr.query_similarity(links[i], query)
+                simi = dr.query_similarity(snippets[i], query)
                 if(simi > best_score):
                     best_score = simi
-                    best_link = links[i]
+                    if(".pdf" not in links[i]):
+                        best_link = links[i]
 
             result_links.append(best_link)
+            result_links = [rs for rs in result_links if rs]
             result_scores += best_score
 
         #Returns the total score and most similar links to each paragraphs
@@ -95,7 +97,8 @@ class SearchEngine():
         df = pd.DataFrame()
         print(links_result)
         df['urls'] = links_result
-        df.to_csv("csvFiles/linksToScrape.csv")
+        #EDIT THIS
+        df.to_csv(r"B:\docubot\DocuBots\Model\Data\linksToScrape.csv")
         try:
             if(links_result != '' and score != 0.0):
                 return links_result, score
@@ -103,4 +106,5 @@ class SearchEngine():
             return "No similar content found online"
 
 a = SearchEngine()
-a.get_simi_link("docxFiles\sample.docx")
+#EDIT THIS
+a.get_simi_link(r"B:\docubot\DocuBots\Model\docxFiles\sample.docx")
