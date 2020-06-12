@@ -2,6 +2,8 @@ from nltk import word_tokenize, sent_tokenize, pos_tag
 import nltk
 from docx import Document
 from nltk.corpus import wordnet as wn
+import pandas as pd
+import os
 
 class DocReader():
 
@@ -9,13 +11,19 @@ class DocReader():
         """
         Return docx files into one set of string to be tokenized later
         """
+        if(os.path.exists(r'Model\Data\doc_texts.csv')):
+            os.remove(r'Model\Data\doc_texts.csvv')
 
+        df = pd.DataFrame()
         doc = Document(filename)
         fullText = []
         for p in doc.paragraphs:
             if p.text != '':
                 fullText.append(p.text)
-        return ' '.join(fullText)
+
+        df['ParaText'] = fullText
+        df.to_csv(r'Model\Data\doc_texts.csv')
+        return " ".join(fullText)
 
     def getQuery(self, filename):
         """
@@ -23,13 +31,18 @@ class DocReader():
         Return content of each paragraphs in a list to be used for
         Search functions later
         """
+        if(os.path.exists(r'Model\Data\doc_texts.csv')):
+            os.remove(r'Model\Data\doc_texts.csv')
 
+        df = pd.DataFrame()
         doc = Document(filename)
         fullText = []
         for p in doc.paragraphs:
             if p != '':
                 fullText.append(p.text)
         fullText = [ft for ft in fullText if ft]
+        df['ParaText'] = fullText
+        df.to_csv('Model\Data\doc_texts.csv')
         return(fullText)
 
     def tag_conversion(self, penntag):
@@ -77,6 +90,7 @@ class DocReader():
         Compares synonym sets of S1 and S2 and returns the highest comparison score
         """
         simis = []
+        simlist = []
 
         for s in s1:
             simlist = [s.path_similarity(ss) for ss in s2 if s.path_similarity(ss) is not None]
@@ -85,9 +99,12 @@ class DocReader():
 
             max_score = max(simlist)
             simis.append(max_score)
-
-        output = sum(simis)/len(simis)
-        return output
+        try:
+            output = sum(simis)/len(simis)
+            return output
+        except:
+            output = 0.0
+            return output
 
     def doc_similarity(self, d1, d2):
         """
@@ -108,3 +125,10 @@ class DocReader():
         synsets2 = dr.str_to_synsets(s2)
 
         return((dr.similarity_ratio(synsets1, synsets2) + dr.similarity_ratio(synsets2, synsets1)) / 2)
+
+    def quick_compare(self, s1, s2):
+        dr = DocReader()
+        return((dr.similarity_ratio(s1,s2) + dr.similarity_ratio(s2,s1))/2)
+
+#dr = DocReader()
+#dr.doc_similarity('B:\docubot\DocuBots\Model\docxFiles\sample.docx', 'B:\docubot\DocuBots\Model\docxFiles\compare.docx')

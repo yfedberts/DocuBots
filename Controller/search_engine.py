@@ -6,7 +6,7 @@ from docx import Document
 import doc_reader
 import pandas as pd
 
-class SearchEngine():        
+class SearchEngine():
 
     """
     def doc_to_paraset(self, filename):
@@ -24,15 +24,15 @@ class SearchEngine():
         Function to search the web using paragraphs from the docx files as a query, returning at most 10 results for each paragraphs,
         It then compares each results with query and returns only the most similar result
         """
-        
+
         #Read the .env files to get API Key and Search engine ID
         load_dotenv(find_dotenv())
-        API_KEY = os.getenv("API_KEY4")
-        SEARCH_ENGINE_ID = os.getenv("SEARCH_ENGINE_ID4")
+        API_KEY = os.getenv("API_KEY2")
+        SEARCH_ENGINE_ID = os.getenv("SEARCH_ENGINE_ID")
 
         #Create an object of the doc_reader class to compare similarities
         dr = doc_reader.DocReader()
-        
+
         #Initiale lists that stores paragraphs for queries, most similar links, and total score respectively
         queryInput = qInput
         result_links = []
@@ -62,7 +62,7 @@ class SearchEngine():
                     links.append(link)
                 except:
                     continue
-            
+
             #Temp variable to store highest similarity and most similar link
             best_score = 0.0
             best_link = ''
@@ -70,16 +70,21 @@ class SearchEngine():
             #Iterate through the descriptions and compare with query
             #Replace current best if score is higher than the current best
             for i in range(len(snippets)):
-                simi = dr.query_similarity(links[i], query)
+                simi = dr.query_similarity(snippets[i], query)
                 if(simi > best_score):
                     best_score = simi
-                    best_link = links[i]
+                    if(".pdf" not in links[i] and ".PDF" not in links[i]):
+                        best_link = links[i]
 
             result_links.append(best_link)
+            result_links = [rs for rs in result_links if rs]
             result_scores += best_score
-        
+
         #Returns the total score and most similar links to each paragraphs
-        return((result_scores/len(result_links)) * 100), result_links
+        try:
+            return((result_scores/len(result_links)) * 100), result_links
+        except:
+            return 0.0, None
 
     def get_simi_link(self, d):
 
@@ -95,12 +100,10 @@ class SearchEngine():
         df = pd.DataFrame()
         print(links_result)
         df['urls'] = links_result
-        df.to_csv("csvFiles/linksToScrape.csv")
+        #EDIT THIS
+        df.to_csv(r"B:\docubot\DocuBots\Model\Data\linksToScrape.csv")
         try:
             if(links_result != '' and score != 0.0):
                 return links_result, score
         except:
             return "No similar content found online"
-
-a = SearchEngine()
-a.get_simi_link("docxFiles\sample.docx")
