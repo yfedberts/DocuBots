@@ -23,7 +23,7 @@ FEED_FORMAT = 'json'
 #USER_AGENT = 'spider_practice (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 CONCURRENT_REQUESTS = 1000

@@ -27,7 +27,7 @@ class SearchEngine():
 
         #Read the .env files to get API Key and Search engine ID
         load_dotenv(find_dotenv())
-        API_KEY = os.getenv("API_KEY")
+        API_KEY = os.getenv("API_KEY2")
         SEARCH_ENGINE_ID = os.getenv("SEARCH_ENGINE_ID")
 
         #Create an object of the doc_reader class to compare similarities
@@ -73,7 +73,7 @@ class SearchEngine():
                 simi = dr.query_similarity(snippets[i], query)
                 if(simi > best_score):
                     best_score = simi
-                    if(".pdf" not in links[i]):
+                    if(".pdf" not in links[i] and ".PDF" not in links[i]):
                         best_link = links[i]
 
             result_links.append(best_link)
@@ -81,7 +81,10 @@ class SearchEngine():
             result_scores += best_score
 
         #Returns the total score and most similar links to each paragraphs
-        return((result_scores/len(result_links)) * 100), result_links
+        try:
+            return((result_scores/len(result_links)) * 100), result_links
+        except:
+            return 0.0, None
 
     def get_simi_link(self, d):
 
@@ -104,7 +107,3 @@ class SearchEngine():
                 return links_result, score
         except:
             return "No similar content found online"
-
-a = SearchEngine()
-#EDIT THIS
-a.get_simi_link(r"B:\docubot\DocuBots\Model\docxFiles\sample.docx")

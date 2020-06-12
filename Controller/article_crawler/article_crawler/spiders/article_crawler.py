@@ -18,9 +18,11 @@ class ArticleCrawler(scrapy.Spider):
     def parse(self, response):
         try:
             soup = bs4(response.text, 'lxml')
+            charLimit = 10
             scraped_contents = soup.find_all('p')
-            texts = [c.text for c in scraped_contents]
-            contents = " ".join(texts)
+            tempList = [c.text for c in scraped_contents if c]
+            textsList = tempList[0:charLimit]
+            contents = " ".join(textsList)
             yield{
                 "url": response.url,
                 "content": contents
