@@ -8,6 +8,7 @@
 #     https://docs.scrapy.org/en/latest/topics/settings.html
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+import os
 
 BOT_NAME = 'article_crawler'
 
@@ -16,7 +17,10 @@ NEWSPIDER_MODULE = 'article_crawler.spiders'
 
 
 #SAVE TARGET
-FEED_URI = 'Model\Data\scraped_results.json'
+
+CURR_PATH = os.path.dirname(__file__)
+DATA_FOLDER = os.path.relpath("..\\Model\\Data")
+FEED_URI = os.path.join(DATA_FOLDER, 'scraped_results.json')
 FEED_FORMAT = 'json'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent

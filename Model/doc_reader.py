@@ -4,6 +4,18 @@ from docx import Document
 from nltk.corpus import wordnet as wn
 import pandas as pd
 import os
+from pathlib import Path
+
+#Defining pathings because python's imports sucks
+CURR_PATH = os.path.dirname(__file__)
+DATA_FOLDER = os.path.relpath("..\\Model\\Data")
+
+#Files pathing
+DOC_TEXTS = os.path.join(DATA_FOLDER, "doc_texts.csv")
+LINKS_LIST = os.path.join(DATA_FOLDER, "linksToScrape.csv")
+SCRAPE_RESULTS_CSV = os.path.join(DATA_FOLDER, "scrape_results.csv")
+SCRAPE_RESULTS_JSON = os.path.join(DATA_FOLDER, "scraped_results.json")
+SIMI_RESULT = os.path.join(DATA_FOLDER, "simi_results.csv")
 
 class DocReader():
 
@@ -11,8 +23,8 @@ class DocReader():
         """
         Return docx files into one set of string to be tokenized later
         """
-        if(os.path.exists(r'Model\Data\doc_texts.csv')):
-            os.remove(r'Model\Data\doc_texts.csvv')
+        if(os.path.exists(DOC_TEXTS)):
+            os.remove(DOC_TEXTS)
 
         df = pd.DataFrame()
         doc = Document(filename)
@@ -22,7 +34,7 @@ class DocReader():
                 fullText.append(p.text)
 
         df['ParaText'] = fullText
-        df.to_csv(r'Model\Data\doc_texts.csv')
+        df.to_csv(DOC_TEXTS)
         return " ".join(fullText)
 
     def getQuery(self, filename):
@@ -31,8 +43,8 @@ class DocReader():
         Return content of each paragraphs in a list to be used for
         Search functions later
         """
-        if(os.path.exists(r'Model\Data\doc_texts.csv')):
-            os.remove(r'Model\Data\doc_texts.csv')
+        if(os.path.exists(DOC_TEXTS)):
+            os.remove(DOC_TEXTS)
 
         df = pd.DataFrame()
         doc = Document(filename)
@@ -42,7 +54,7 @@ class DocReader():
                 fullText.append(p.text)
         fullText = [ft for ft in fullText if ft]
         df['ParaText'] = fullText
-        df.to_csv('Model\Data\doc_texts.csv')
+        df.to_csv(DOC_TEXTS)
         return(fullText)
 
     def tag_conversion(self, penntag):
@@ -61,11 +73,10 @@ class DocReader():
         Getting text from a document file to be tokenized and separated into words,
         WordNet is then used to find synonym sets for each words to be used for comparisons later
         """
-        dr = DocReader()
-        Text = dr.getText(doc)
+        Text = self.getText(doc)
         token = word_tokenize(Text)
         tag = nltk.pos_tag(token)
-        wn_tag = [(i[0], dr.tag_conversion(i[1])) for i in tag]
+        wn_tag = [(i[0], self.tag_conversion(i[1])) for i in tag]
         output = [wn.synsets(i, z)[0] for i, z in wn_tag if len(wn.synsets(i, z))>0]
         return output
 
@@ -74,11 +85,9 @@ class DocReader():
         Instead of reading from a docx files, it reads in strings and
         returns a the sets of synonyms.
         """
-
-        dr = DocReader()
         token = word_tokenize(s1)
         tag = nltk.pos_tag(token)
-        wn_tag = [(i[0], dr.tag_conversion(i[1])) for i in tag]
+        wn_tag = [(i[0], self.tag_conversion(i[1])) for i in tag]
         output = [wn.synsets(i, z)[0] for i, z in wn_tag if len(wn.synsets(i, z))>0]
         return output
 
@@ -108,27 +117,21 @@ class DocReader():
 
     def doc_similarity(self, d1, d2):
         """
-        Function used to compare simiarity between 2 docx fiels
+        Function used to compare simiarity between 2 docx files
         """
-        dr = DocReader()
-        synsets1 = dr.doc_to_synsets(d1)
-        synsets2 = dr.doc_to_synsets(d2)
+        synsets1 = self.doc_to_synsets(d1)
+        synsets2 = self.doc_to_synsets(d2)
 
-        return ((dr.similarity_ratio(synsets1,synsets2) + dr.similarity_ratio(synsets2, synsets1)) /2)
+        return ((self.similarity_ratio(synsets1,synsets2) + self.similarity_ratio(synsets2, synsets1)) /2)
 
     def query_similarity(self, s1, s2):
         """
         Function used to compare queries, can also be used for sentences/string comparison
         """
-        dr = DocReader()
-        synsets1 = dr.str_to_synsets(s1)
-        synsets2 = dr.str_to_synsets(s2)
+        synsets1 = self.str_to_synsets(s1)
+        synsets2 = self.str_to_synsets(s2)
 
-        return((dr.similarity_ratio(synsets1, synsets2) + dr.similarity_ratio(synsets2, synsets1)) / 2)
+        return((self.similarity_ratio(synsets1, synsets2) + self.similarity_ratio(synsets2, synsets1)) / 2)
 
     def quick_compare(self, s1, s2):
-        dr = DocReader()
-        return((dr.similarity_ratio(s1,s2) + dr.similarity_ratio(s2,s1))/2)
-
-#dr = DocReader()
-#dr.doc_similarity('B:\docubot\DocuBots\Model\docxFiles\sample.docx', 'B:\docubot\DocuBots\Model\docxFiles\compare.docx')
+        return((self.similarity_ratio(s1,s2) + self.similarity_ratio(s2,s1))/2)

@@ -8,17 +8,6 @@ import pandas as pd
 
 class SearchEngine():
 
-    """
-    def doc_to_paraset(self, filename):
-        doc = Document(filename)
-        fullText = []
-        for p in doc.paragraphs:
-            if p != '':
-                fullText.append(p.text)
-        fullText = [ft for ft in fullText if ft]
-        return ",".join(fullText)
-    """
-
     def searchWeb(self, qInput):
         """
         Function to search the web using paragraphs from the docx files as a query, returning at most 10 results for each paragraphs,
@@ -27,7 +16,7 @@ class SearchEngine():
 
         #Read the .env files to get API Key and Search engine ID
         load_dotenv(find_dotenv())
-        API_KEY = os.getenv("API_KEY2")
+        API_KEY = os.getenv("API_KEY4")
         SEARCH_ENGINE_ID = os.getenv("SEARCH_ENGINE_ID")
 
         #Create an object of the doc_reader class to compare similarities

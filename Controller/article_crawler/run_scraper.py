@@ -12,8 +12,8 @@ class Scraper:
         self.spider = ArticleCrawler
 
     def run_spider(self):
-        if(os.path.exists(r'Model\Data\scraped_results.json')):
-            os.remove(r'Model\Data\scraped_results.json')
+        if(os.path.exists(r'B:\docubot\DocuBots\Model\Data\scraped_results.json')):
+            os.remove(r'B:\docubot\DocuBots\Model\Data\scraped_results.json')
 
         #if __name__ ==  "__main__":
         self.process.crawl(self.spider)

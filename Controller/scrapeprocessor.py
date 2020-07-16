@@ -6,22 +6,21 @@ import time
 from nltk.corpus import wordnet as wn
 
 class ScrapeProcessor():
+
     def clean_text(self, filename):
         with open(filename) as f:
             data = json.load(f)
 
         df = pd.DataFrame(data)
         df['content'] = df['content'].astype(str).str.strip(r'\r').str.strip(r'\xa0').str.strip(r'\n').str.strip(r'\t')
-        df.to_csv(r'Model\Data\scrape_results.csv', encoding='utf-8-sig')
-
+        df.to_csv(r'B:\docubot\DocuBots\Model\Data\scrape_results.csv', encoding='utf-8-sig')
 
     def scrape_links(self):
-        sp = ScrapeProcessor()
-        if(os.path.exists(r'Model\Data\scrape_results.csv')):
-            os.remove(r'Model\Data\scrape_results.csv')
+        if(os.path.exists(r'B:\docubot\DocuBots\Model\Data\scrape_results.csv')):
+            os.remove(r'B:\docubot\DocuBots\Model\Data\scrape_results.csv')
         scraper = Scraper()
         scraper.run_spider()
-        sp.clean_text(r'Model\Data\scraped_results.json')
+        self.clean_text(r'B:\docubot\DocuBots\Model\Data\scraped_results.json')
 
     def web_doc_similarity(self):
         start = time.time()
@@ -63,22 +62,25 @@ class ScrapeProcessor():
                 del webSynSets[ss2_num]
 
             indiv_scores.append(best_score)
+            result_scores += best_score
+
             simi_links.append(best_link)
             simi_content.append(best_content)
-            result_scores += best_score
 
         end = time.time()
         print(end-start)
-        return((result_scores/len(indiv_scores)) * 100), indiv_scores, simi_links, simi_content
+        try:
+            return indiv_scores, simi_links, simi_content
+        except:
+            return 0.0, 0.0, "None Found", "None Found"
 
     def check_simi(self):
         sp = ScrapeProcessor()
         sp.scrape_links()
-        total_score, indiv_scores, simi_links, simi_content  = sp.web_doc_similarity()
+        indiv_scores, simi_links, simi_content  = self.web_doc_similarity()
         df = pd.DataFrame()
-        df['Similar Links'] = simi_links
-        df['Most Similar Content'] = simi_content
-        df['Individual Similarity Score'] = indiv_scores
-        df['Total Score'] = total_score
+        df['simi_links'] = pd.Series(simi_links)
+        df['simi_content'] = pd.Series(simi_content)
+        df['indiv_scores'] = pd.Series(indiv_scores)
 
         return df
