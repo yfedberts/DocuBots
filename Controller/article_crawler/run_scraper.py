@@ -3,6 +3,11 @@ from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 import os
 
+
+CURR_PATH = os.path.dirname(__file__)
+DATA_FOLDER = os.path.relpath("..\\Model\\Data")
+SCRAPE_RESULTS_JSON = os.path.join(CURR_PATH, DATA_FOLDER, "scraped_results.json")
+
 class Scraper:
 
     def __init__(self):
@@ -10,11 +15,11 @@ class Scraper:
         os.environ.setdefault('SCRAPY_SETTINGS_MODULE', settings_file_path)
         self.process = CrawlerProcess(get_project_settings())
         self.spider = ArticleCrawler
+        self.process.start()
 
     def run_spider(self):
-        if(os.path.exists(r'B:\docubot\DocuBots\Model\Data\scraped_results.json')):
-            os.remove(r'B:\docubot\DocuBots\Model\Data\scraped_results.json')
+        if(os.path.exists(SCRAPE_RESULTS_JSON)):
+            os.remove(SCRAPE_RESULTS_JSON)
 
         #if __name__ ==  "__main__":
         self.process.crawl(self.spider)
-        self.process.start()

@@ -11,11 +11,7 @@ CURR_PATH = os.path.dirname(__file__)
 DATA_FOLDER = os.path.relpath("..\\Model\\Data")
 
 #Files pathing
-DOC_TEXTS = os.path.join(DATA_FOLDER, "doc_texts.csv")
-LINKS_LIST = os.path.join(DATA_FOLDER, "linksToScrape.csv")
-SCRAPE_RESULTS_CSV = os.path.join(DATA_FOLDER, "scrape_results.csv")
-SCRAPE_RESULTS_JSON = os.path.join(DATA_FOLDER, "scraped_results.json")
-SIMI_RESULT = os.path.join(DATA_FOLDER, "simi_results.csv")
+DOC_TEXTS = os.path.join(CURR_PATH, DATA_FOLDER, "doc_texts.csv")
 
 class DocReader():
 

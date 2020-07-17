@@ -6,6 +6,10 @@ from docx import Document
 import doc_reader
 import pandas as pd
 
+CURR_PATH = os.path.dirname(__file__)
+DATA_FOLDER = os.path.relpath("..\\Model\\Data")
+LINKS_LIST = os.path.join(CURR_PATH, DATA_FOLDER, "linksToScrape.csv")
+
 class SearchEngine():
 
     def searchWeb(self, qInput):
@@ -73,6 +77,7 @@ class SearchEngine():
         try:
             return((result_scores/len(result_links)) * 100), result_links
         except:
+            print("Try another API Key")
             return 0.0, None
 
     def get_simi_link(self, d):
@@ -85,12 +90,12 @@ class SearchEngine():
         dr = doc_reader.DocReader()
         se = SearchEngine()
         doc = dr.getQuery(d)
-        score, links_result = se.searchWeb(doc)
+        links_result = se.searchWeb(doc)
         df = pd.DataFrame()
         print(links_result)
         df['urls'] = links_result
         #EDIT THIS
-        df.to_csv(r"B:\docubot\DocuBots\Model\Data\linksToScrape.csv")
+        df.to_csv(LINKS_LIST)
         try:
             if(links_result != '' and score != 0.0):
                 return links_result, score

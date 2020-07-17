@@ -5,6 +5,14 @@ from doc_reader import DocReader
 import time
 from nltk.corpus import wordnet as wn
 
+CURR_PATH = os.path.dirname(__file__)
+DATA_FOLDER = os.path.relpath("..\\Model\\Data")
+
+DOC_TEXTS = os.path.join(CURR_PATH, DATA_FOLDER, "doc_texts.csv")
+LINKS_LIST = os.path.join(CURR_PATH, DATA_FOLDER, "linksToScrape.csv")
+SCRAPE_RESULTS_CSV = os.path.join(CURR_PATH, DATA_FOLDER, "scrape_results.csv")
+SCRAPE_RESULTS_JSON = os.path.join(CURR_PATH, DATA_FOLDER, "scraped_results.json")
+
 class ScrapeProcessor():
 
     def clean_text(self, filename):
@@ -13,19 +21,19 @@ class ScrapeProcessor():
 
         df = pd.DataFrame(data)
         df['content'] = df['content'].astype(str).str.strip(r'\r').str.strip(r'\xa0').str.strip(r'\n').str.strip(r'\t')
-        df.to_csv(r'B:\docubot\DocuBots\Model\Data\scrape_results.csv', encoding='utf-8-sig')
+        df.to_csv(SCRAPE_RESULTS_CSV, encoding='utf-8-sig')
 
     def scrape_links(self):
-        if(os.path.exists(r'B:\docubot\DocuBots\Model\Data\scrape_results.csv')):
-            os.remove(r'B:\docubot\DocuBots\Model\Data\scrape_results.csv')
+        if(os.path.exists(SCRAPE_RESULTS_CSV)):
+            os.remove(SCRAPE_RESULTS_CSV)
         scraper = Scraper()
         scraper.run_spider()
-        self.clean_text(r'B:\docubot\DocuBots\Model\Data\scraped_results.json')
+        self.clean_text(SCRAPE_RESULTS_JSON)
 
     def web_doc_similarity(self):
         start = time.time()
-        df = pd.read_csv(r'B:\docubot\DocuBots\Model\Data\doc_texts.csv')
-        df2 = pd.read_csv(r'B:\docubot\DocuBots\Model\Data\scrape_results.csv')
+        df = pd.read_csv(DOC_TEXTS)
+        df2 = pd.read_csv(SCRAPE_RESULTS_CSV)
 
         dr = DocReader()
         #Convert to Synsets
@@ -81,6 +89,6 @@ class ScrapeProcessor():
         df = pd.DataFrame()
         df['simi_links'] = pd.Series(simi_links)
         df['simi_content'] = pd.Series(simi_content)
-        df['indiv_scores'] = pd.Series(indiv_scores)
+        df['indiv_scores'] = indiv_scores
 
         return df

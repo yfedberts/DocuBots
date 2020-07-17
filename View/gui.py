@@ -1,35 +1,27 @@
 import tkinter as tk
-from tkinter import ttk, filedialog, OptionMenu
-import docubot, doc_reader, os
+from tkinter import ttk, filedialog, OptionMenu, HORIZONTAL
+from tkinter.ttk import Progressbar
+import docubot, doc_reader, os, time, threading
 from docx import Document
 import pandas as pd
 
-#Settings
+#Font Settings
 LARGE_FONT = ("Verdana", 12)
-DISPLAY_FONT = ("Verdana", 10)
+MEDIUM_FONT = ("Verdana", 10)
+DISPLAY_FONT = ("Verdana", 8)
 
-#Folder Paths
-PATH1 = os.path.dirname(__file__)
-MODEL_FOLDER = os.path.dirname(os.path.abspath("Model"))
-DATA_FOLDER = os.path.dirname(os.path.abspath("Data"))
-DOCX_FOLDER = os.path.dirname(os.path.abspath("docxFiles"))
-
-#Files pathing
+#Files temp storage
 DOC_SOURCE = ""
 DOC_SOURCE2 = ""
-
-DOC_TEXTS = os.path.join(PATH1, MODEL_FOLDER, DATA_FOLDER, "doc_texts.csv")
-LINKS_LIST = os.path.join(PATH1, MODEL_FOLDER, DATA_FOLDER, "linksToScrape.csv")
-SCRAPE_RESULTS_CSV = os.path.join(PATH1, MODEL_FOLDER, DATA_FOLDER, "scrape_results.csv")
-SCRAPE_RESULTS_JSON = os.path.join(PATH1, MODEL_FOLDER, DATA_FOLDER, "scraped_results.json")
-SIMI_RESULT = os.path.join(PATH1, MODEL_FOLDER, DATA_FOLDER, "simi_results.csv")
 
 dbot = docubot.DocuBot()
 
 #Button Actions
-
 def upload_file(input_textbox, opt):
     filename = filedialog.askopenfilename()
+    #ENABLE WRITING
+    input_textbox.configure(state='normal')
+
     if(opt == 1):
         global DOC_SOURCE
         DOC_SOURCE = filename
@@ -52,24 +44,46 @@ def upload_file(input_textbox, opt):
     else:
         print("Error in uploading file")
 
-def run_check(filesource, input_textbox, score_textbox, simi_links_textbox):
-    score = dbot.analyze_simi_online()
-    data = pd.read_csv(r"B:\docubot\DocuBots\Model\Data\simi_results.csv")
-    print(score)
+    #DISABLE WRITING
+    input_textbox.configure(state='disable')
+
+def run_online_check(filesource, input_textbox, score_textbox, simi_links_textbox, loadingbar):
+    #ENABLE WRITING
+    loadingbar['value']=20
+    score_textbox.configure(state='normal')
+    simi_links_textbox.configure(state='normal')
+
+    score, urls = dbot.analyze_simi_online()
+    loadingbar['value']=50
     simi_score = round(score, 2)
     score_textbox.insert(tk.END, simi_score)
+    loadingbar['value']=70
 
     cnt = 1
-    links = data['simi_links']
-    for link in links:
+    for link in urls:
         simi_links_textbox.insert(tk.END, str(cnt) + ". " + link + "\n\n")
         cnt+=1
 
-def run_local_check(display, doc1, doc2):
+    loadingbar['value']=90
+
+    #DISABLE WRITING
+    score_textbox.configure(font = DISPLAY_FONT, state='disable')
+    simi_links_textbox.configure(font = DISPLAY_FONT, state='disable')
+    loadingbar['value']=100
+
+def run_local_check(display, doc1, doc2, loadingbar):
+    loadingbar['value'] = 20
+    display.configure(state='normal')
     display.delete(1.0, tk.END)
+    loadingbar['value'] = 40
     score = dbot.analyze_simi_local(doc1, doc2) * 100
+    loadingbar['value'] = 70
     score = round(score, 2)
+    loadingbar['value'] = 80
     display.insert(tk.END, score)
+    loadingbar['value'] = 90
+    display.configure(font = DISPLAY_FONT, state='disable')
+    loadingbar['value'] = 100
 
 class DocuBotApp(tk.Tk):
 
@@ -108,19 +122,31 @@ class OnlineChecker(tk.Frame):
     def __init__(self, parent, controller):
         ttk.Frame.__init__(self, parent)
         label = ttk.Label(self, text="Check for similarities with contents found online", font = LARGE_FONT)
-        label.grid(row=0, columnspan=2)
+        label.grid(row=0, columnspan=2,sticky="ns")
 
-        #TODO: Find a way to set the position of the textbox
+        #Display the uploaded file
+        displayLlabel = ttk.Label(self, text="Uploaded File", font = MEDIUM_FONT)
+        displayLlabel.grid(row=1,column=0, pady=0, sticky="nsew")
+
         docxDisplay = tk.Text(self, height = 25, width = 50)
-        docxDisplay.grid(row=1, column =0, rowspan=2)
+        docxDisplay.grid(row=2, column =0, rowspan=4, pady=0, sticky="nsew")
+        docxDisplay.configure(state='disable')
 
         #Results Display
+        scoreLabel = ttk.Label(self, text="Similarity Score", font = MEDIUM_FONT)
+        scoreLabel.grid(row=1, column=1, pady=0, sticky="nsew")
+
         scoreDisplay = tk.Text(self, height = 5, width = 50)
-        scoreDisplay.grid(row=1,column=1)
+        scoreDisplay.grid(row=2,column=1,pady=0, sticky="nsew")
+        scoreDisplay.configure(state='disable')
 
         #Similar Links
-        simiLinksDisplay = tk.Text(self, height = 20, width = 50)
-        simiLinksDisplay.grid(row=2, column=1)
+        similinksLabel = ttk.Label(self, text="Websites with similar content", font=MEDIUM_FONT)
+        similinksLabel.grid(row=3, column=1,pady=0,sticky="nsew")
+
+        simiLinksDisplay = tk.Text(self, height = 18, width = 50)
+        simiLinksDisplay.grid(row=4, column=1,pady=0, ipady=0, sticky="nsew")
+        simiLinksDisplay.configure(state='disable')
 
         #Sensitivity Option
         OptionList = ["1", "2", "3"]
@@ -128,18 +154,29 @@ class OnlineChecker(tk.Frame):
         var.trace("w", lambda x,y,z: self.set_sens(var))
         var.set("2")
 
-        sens_option = ttk.OptionMenu(self, var, OptionList[1], *OptionList)
-        sens_option.config(width = 5)
-        sens_option.grid(row=3, column=1)
+        sensLabel = ttk.Label(self, text="          Set Sensitivity \n(1: Low, 2: Medium, 3: High)",font=MEDIUM_FONT)
+        sensLabel.grid(row=5, column=1,pady=0)
 
-        checkButton = ttk.Button(self, text="Check Similarity", command= lambda: run_check(DOC_SOURCE, docxDisplay, scoreDisplay, simiLinksDisplay))
-        checkButton.grid(row=4,column=1)
+        sens_option = ttk.OptionMenu(self, var, OptionList[1], *OptionList)
+        sens_option.grid(row=6, column=1,pady=0)
+
+        progress = Progressbar(self, orient=HORIZONTAL,length=100,  mode='determinate')
+        progress.grid(row=7, columnspan=2, pady=5,sticky="ew")
+
+        checkButton = ttk.Button(self, text="Check Similarity", command= lambda: run_online_check(DOC_SOURCE, docxDisplay, scoreDisplay, simiLinksDisplay, progress))
+        checkButton.grid(row=8,column=1,pady=0, sticky="nsew")
 
         uploadButton = ttk.Button(self, text="Upload File", command= lambda: upload_file(docxDisplay, 1))
-        uploadButton.grid(row=4,column=0)
+        uploadButton.grid(row=8,column=0,pady=0, sticky="nsew")
 
         homeButton = ttk.Button(self, text="Home", command= lambda: controller.show_frame(StartPage))
-        homeButton.grid(row=4, columnspan=2)
+        homeButton.grid(row=9, columnspan=2,pady=0, sticky="nsew")
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=1)
+
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
 
 class LocalChecker(tk.Frame):
     def __init__(self, parent, controller):
@@ -147,43 +184,69 @@ class LocalChecker(tk.Frame):
         label = tk.Label(self, text="Check for similarities with documents on your computer", font = LARGE_FONT)
         label.grid(row=0, columnspan=2)
 
-        #TODO: Find a way to set the position of the textbox
+        #Display 1st Document
+        LabelDisplay1 = ttk.Label(self, text="File 1", font=MEDIUM_FONT)
+        LabelDisplay1.grid(row=1,column=0, sticky="nsew")
+
         docxDisplay = tk.Text(self, height = 25, width = 50)
-        docxDisplay.grid(row=1, column =0, rowspan=2)
+        docxDisplay.grid(row=2, column =0, rowspan=3, sticky="nsew")
+        docxDisplay.configure(state='disable')
 
         #Results Display
-        scoreDisplay = tk.Text(self, height = 4, width = 50)
-        scoreDisplay.grid(row=1,column=1)
+        scoreLabel = tk.Label(self, text="Similarity Score", font=MEDIUM_FONT)
+        scoreLabel.grid(row=1, column=1, sticky="nsew")
 
-        #Similar Links
+        scoreDisplay = tk.Text(self, height = 4, width = 50)
+        scoreDisplay.grid(row=2,column=1,sticky="nsew")
+        scoreDisplay.configure(state='disable')
+
+        #Display 2nd Doc (for comparison)
+        LabelDisplay2 = ttk.Label(self, text="File 2 (Comparison)", font=MEDIUM_FONT)
+        LabelDisplay2.grid(row=3, column=1, sticky="nsew")
+
         docxDisplay2 = tk.Text(self, height = 20, width = 50)
-        docxDisplay2.grid(row=2, column=1)
+        docxDisplay2.grid(row=4, column=1, sticky="nsew")
+        docxDisplay2.configure(state='disable')
+
+        progress = Progressbar(self, orient=HORIZONTAL,length=100,  mode='determinate')
+        progress.grid(row=5, columnspan=2, pady=5,sticky="ew")
+
+        checkButton = ttk.Button(self, text="Check Similarity", command= lambda: run_local_check(scoreDisplay, DOC_SOURCE, DOC_SOURCE2, progress))
+        checkButton.grid(row=6, columnspan=2, sticky="nsew")
 
         uploadButton1 = ttk.Button(self, text="Upload File 1", command= lambda: upload_file(docxDisplay, 1))
-        uploadButton1.grid(row=4,column=0)
+        uploadButton1.grid(row=7,column=0, sticky="nsew")
 
         uploadButton2 = ttk.Button(self, text="Upload File 2", command= lambda: upload_file(docxDisplay2, 2))
-        uploadButton2.grid(row=4,column=1)
-
-        checkButton = ttk.Button(self, text="Check Similarity", command= lambda: run_local_check(scoreDisplay, DOC_SOURCE, DOC_SOURCE2))
-        checkButton.grid(row=4, columnspan=2)
+        uploadButton2.grid(row=7,column=1, sticky="nsew")
 
         homeButton = ttk.Button(self, text="Home", command= lambda: controller.show_frame(StartPage))
-        homeButton.grid(row=5, columnspan=2)
+        homeButton.grid(row=8, columnspan=2, pady=10)
 
-        #Other todo: Optimize the search engine, fix the scrapy bug, set output to be limited to have no digits, scroll bar, and progress bar
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
 
 class StartPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self,parent)
-        label = tk.Label(self, text="Start Page", font = LARGE_FONT)
-        label.pack(pady = 10, padx = 10)
+
+        label2 = tk.Label(self, text="By: Yulius Faustinus Edbert (201769990185) & Justin Anthony Nolan (201769990135)", font = MEDIUM_FONT)
+        label2.grid(row=0, columnspan=2, sticky="n")
+
+        label = tk.Label(self, text="Document Plagiarism Checker", font = ("Verdana", 15))
+        label.grid(row=1, columnspan=2,sticky="n")
 
         button = ttk.Button(self, text="Check for similarities online", command= lambda: controller.show_frame(OnlineChecker))
-        button.pack(pady=30, padx=30)
+        button.grid(row=2, column = 0, pady=15, padx=15)
 
-        button1 = ttk.Button(self, text="Check for similarities ", command= lambda: controller.show_frame(LocalChecker))
-        button1.pack(pady=30, padx=30)
+        button1 = ttk.Button(self, text="Check for similarities with local files", command= lambda: controller.show_frame(LocalChecker))
+        button1.grid(row = 2, column = 1, pady=15, padx=15)
+
+        self.grid_rowconfigure(0, weight = 1)
+        self.grid_rowconfigure(1, weight = 1)
+
+        self.grid_columnconfigure(0,weight=1)
+        self.grid_columnconfigure(1,weight=1)
 
 app = DocuBotApp()
 app.mainloop()

@@ -20,7 +20,7 @@ NEWSPIDER_MODULE = 'article_crawler.spiders'
 
 CURR_PATH = os.path.dirname(__file__)
 DATA_FOLDER = os.path.relpath("..\\Model\\Data")
-FEED_URI = os.path.join(DATA_FOLDER, 'scraped_results.json')
+FEED_URI = os.path.join(CURR_PATH, DATA_FOLDER, 'scraped_results.json')
 FEED_FORMAT = 'json'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
